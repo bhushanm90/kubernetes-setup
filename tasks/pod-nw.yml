@@ -1,0 +1,10 @@
+---
+- name: Setup Pod Network
+  command: "kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
+  register: podnw
+  ignore_errors: yes
+  # run_once: true
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['master'] }}"
+      
+- debug: msg={{ podnw }}

@@ -1,0 +1,7 @@
+---
+- name: join worker node 
+  command: "kubeadm join 172.31.86.209:6443 --token {{ kubjoin.stdout[1].split()[0] }}  --discovery-token-ca-cert-hash sha256:{{ cacert.stdout }}"
+ # run_once: true
+ #command: "kubeadm join {{ masterip }}:6443 --token {{  kubjoin.stdout_lines[1].split()[0] }}  --discovery-token-unsafe-skip-ca-verification" 
+ #delegate_to: "{{ item }}"
+ #with_items: "{{ groups['worker'] }}"
