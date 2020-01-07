@@ -1,2 +1,37 @@
 ---
 # tasks file for kubernetes-setup
+#
+- name: Bring private ip of remote server
+  set_fact:
+    mprivateip: "{{ ansible_eth0.ipv4.address }}"
+
+- debug: msg={{ mprivateip }}
+#- include: fetch-mpip.yml
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups['master'] }}"
+
+- include: kube-packges.yml
+  delegate_to: '{{ groups.cluster[1] }}' 
+#  with_items: "{{ groups['cluster'] }}"
+
+- include: kube-init.yml 
+  #delegate_to: "{{ item }}"
+  delegate_to: '{{ groups.master[0] }}'
+  #with_items: "{{ groups['master'] }}"
+
+- include: create-dir.yml
+  delegate_to: '{{ groups.master[0] }}'
+#  with_items: "{{ groups['master'] }}"
+#
+- include: pod-nw.yml
+  delegate_to: '{{ groups.master[0] }}'
+#  with_items: "{{ groups['master'] }}"
+#
+- include: token-ca-cert.yml
+  delegate_to: "{{ groups.master[0] }}"
+#  with_items: "{{ groups['master'] }}"
+#
+- include: join-master-node.yml 
+  delegate_to: "{{ groups.worker[0] }}"
+##  with_items: "{{ groups['worker'] }}"

@@ -6,7 +6,8 @@
 #  delegate_to: "{{ item }}"
  # with_items: "{{ groups['master'] }}"
 
-- debug: msg={{ kubetoken }}
+- debug: 
+    var: "{{ kubetoken }}"
 
 
 - name: Create CA-CERT
@@ -17,4 +18,4 @@
  # with_items: "{{ groups['master'] }}"
 
 - debug:
-  msg: "{{ cacert }}"
+    var: "{{ cacert }}"

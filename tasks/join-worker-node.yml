@@ -1,6 +1,10 @@
 ---
 - name: join worker node 
-  command: "kubeadm join 172.31.86.209:6443 --token {{ kubjoin.stdout[1].split()[0] }}  --discovery-token-ca-cert-hash sha256:{{ cacert.stdout }}"
+  command: "kubeadm join {{ mprivateip }}:6443 --token {{ kubetoken.stdout[1].split()[0] }}  --discovery-token-ca-cert-hash sha256:{{ cacert.stdout }}"
+  register: joinwork
+  
+- debug: 
+    msg: "{{ joinwork }}"
  # run_once: true
  #command: "kubeadm join {{ masterip }}:6443 --token {{  kubjoin.stdout_lines[1].split()[0] }}  --discovery-token-unsafe-skip-ca-verification" 
  #delegate_to: "{{ item }}"

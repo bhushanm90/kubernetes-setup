@@ -3,4 +3,5 @@
   set_fact:
     mprivateip: "{{ ansible_eth0.ipv4.address }}"
 
-- debug: msg={{ mprivateip }}
+- debug: 
+    var: "{{ mprivateip }}"
