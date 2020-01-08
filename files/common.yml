@@ -1,5 +1,5 @@
 ---
-- hosts: cluster
+- hosts: master
   become: true
   pre_tasks: 
     - name: Bring private ip of remote server

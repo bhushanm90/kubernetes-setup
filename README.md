@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 Role Name
 =========
 
@@ -24,9 +23,38 @@ Example Playbook
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+---
+- hosts: master
+  become: true
+  pre_tasks:
+    - name: Bring private ip of remote server
+      set_fact:
+        mprivateip: "{{ ansible_eth0.ipv4.address }}"
+      delegate_to: "{{ item }}"
+      delegate_facts: true
+      with_items: "{{ groups['master'] }}"
+
+
+  roles:
+    - kubernetes-setup
+
+ansible-playbook common.yml
+=============================================================================
+INVENTORY: example
+
+[cluster]
+3.88.33.75
+3.95.151.123
+
+
+[master]
+3.88.33.75
+
+
+[worker]
+3.95.151.123
+
+
 
 License
 -------
@@ -35,8 +63,15 @@ BSD
 
 Author Information
 ------------------
+Bhushan B Mahajan
+-: ANSIBLE Ninja
+
+It's hard to beat a person who never Gives up !!!
+
+
+Contact: bmahajan0@gmail.com
 
 An optional section for the role authors to include contact information, or a website (HTML is not allowed).
 =======
 # kubernetes-setup
->>>>>>> 91f60cbafc9160614f916525eac8263b632e2afd
+ 
