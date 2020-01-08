@@ -1,13 +1,14 @@
 ---
-- hosts: master
+- hosts: cluster
   become: true
   pre_tasks: 
     - name: Bring private ip of remote server
       set_fact:
         mprivateip: "{{ ansible_eth0.ipv4.address }}"
       delegate_to: "{{ item }}"
-      loop: "{{ groups.master }}"
-
+      delegate_facts: true
+      with_items: "{{ groups['master'] }}"
+      
 
   roles: 
     - kubernetes-setup

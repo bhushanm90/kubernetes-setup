@@ -62,6 +62,6 @@
     enabled: yes
   register: kubeser
 
-- debug: 
+- debug:
     var: "{{ kubeser }}"
     

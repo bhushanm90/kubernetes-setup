@@ -5,12 +5,12 @@
     msg: "This is a private IP address of master :{{ mprivateip }}"
   register: picip
 
-- debug: msg={{ picip }}
 
 - include: kube-packges.yml
+  delegate_facts: true
   delegate_to: '{{ item  }}' 
-  delegate_facts: yes
-  loop: "{{ groups.cluster }}"
+  with_items: "{{ groups['cluster'] }}"
+
   #with_items: "{{ groups['cluster'] }}"
 
 
@@ -18,8 +18,8 @@
   command: "kubeadm init --apiserver-advertise-address={{ mprivateip }} --pod-network-cidr=10.244.0.0/16"
   register: initialize_clus
   ignore_errors: yes
+  delegate_facts: true
   delegate_to: '{{ item  }}'
-  delegate_facts: yes
   with_items: "{{ groups['master'] }}"
 
    
@@ -28,43 +28,71 @@
   with_items: "{{ groups['master'] }}"
 
 - include: pod-nw.yml
+  delegate_facts: true
   delegate_to: "{{ item }}" 
-  delegate_facts: yes
   with_items: "{{ groups['master'] }}"
 
-- name: Get token list 
-  shell: kubeadm token list 
-  register: kubetoken
-  delegate_to: "{{ item }}"
-  delegate_facts: yes
-  with_items: "{{ groups['master'] }}"
+- include_tasks: pass1.yml
+
+- include_tasks: pass2.yml
+
+#- name: Get token list 
+ ## shell: kubeadm token list 
+#  register: kubetoken
+#  delegate_facts: true
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['master'] }}"
+#  tags: t
+#
+#- set_fact: 
+#    tokennew: "{{ kubetoken.stdout_lines[1].split()[0] }}"
+#  delegate_to: "{{ item }}"
+#  delegate_facts: true
+#  with_items: "{{ groups['master'] }}"
+##- debug: msg={{ tokennew }}
+##- debug: msg={{ tokennew.stdout_lines[1].split()[0] }}
+
+
+#- debug: msg={{ kubetoken }}
+
+#- debug: 
+ #   msg: "{{ kubetoken.stdout_lines[1].split()[0] }}"
+ # tags: t
+
+#- debug: msg={{ kubetoken.stdout_lines[1].split()[0] }}
  
-- debug: msg={{ kubetoken }}
  
- 
-- name: Create CA-CERT
-  shell: "openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'"
-  register: cacert
-  delegate_to: "{{ item }}"
-  delegate_facts: yes
-  with_items: "{{ groups['master'] }}"
+#- name: Create CA-CERT
+#  shell: "openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'"
+#  register: cacert
+#  tags: t
+#  delegate_facts: true
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['master'] }}"
+#  tags: t
+#
+#- set_fact:
+#    cacertnew: "{{ cacert.stdout }}"
+#  delegate_to: "{{ item }}"
+#  delegate_facts: true
+#  with_items: "{{ groups['master'] }}"
+#
+#- debug: msg={{ cacertnew }}
+#- debug: msg={{ cacertnew.stdout }}
+##
 
-- debug: msg={{  cacert }}
-
-
-
-- name: join worker node 
-  command: "kubeadm join {{ mprivateip }}:6443 --token {{ kubetoken.stdout[1].split()[0] }}  --discovery-token-ca-cert-hash sha256:{{ cacert.stdout }}"
-  register: joinwork
-  delegate_to: "{{ item }}"
-  delegate_facts: yes
-  with_items: "{{ groups['worker'] }}"
-  
-- debug: 
-    msg: "{{ joinwork }}"
-
-
-
+#- name: join worker node 
+#  command: "kubeadm join {{ mprivateip }}:6443 --token {{ kubetoken.stdout_lines[1].split()[0] }}  --discovery-token-ca-cert-hash sha256:{{ cacert.stdout }}"
+#  register: joinwork
+#  delegate_facts: true
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['worker'] }}"
+#  tags: t
+##- debug: msg={{ joinwork }}
+#  tags: t
+#
+#
+#
 # NEW WAY TO DELEGATE for single instance
  # delegate_to: "{{ groups.worker[0] }}"
  # delegate_to: '{{ item  }}'
