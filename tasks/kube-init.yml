@@ -3,9 +3,8 @@
   command: "kubeadm init --apiserver-advertise-address={{ mprivateip }} --pod-network-cidr=10.244.0.0/16"
   register: initialize_clus
   ignore_errors: yes
-  #run_once: true
- # delegate_to: "{{ item }}"
- # with_items: "{{ groups['master'] }}"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['master'] }}"
 
 - debug:   
     var: "{{ initialize_clus }}"

@@ -6,35 +6,36 @@
   register: picip
 
 
-- include: kube-packges.yml
-  delegate_facts: true
-  delegate_to: '{{ item  }}' 
-  with_items: "{{ groups['cluster'] }}"
+- include_tasks: kube-packges.yml
+#  delegate_facts: true
+ # delegate_to: '{{ item  }}' 
+  #with_items: "{{ groups['cluster'] }}"
 
   #with_items: "{{ groups['cluster'] }}"
 
 
-- name: Initialize kubernetes cluster 
-  command: "kubeadm init --apiserver-advertise-address={{ mprivateip }} --pod-network-cidr=10.244.0.0/16"
-  register: initialize_clus
-  ignore_errors: yes
-  delegate_facts: true
-  delegate_to: '{{ item  }}'
-  with_items: "{{ groups['master'] }}"
+- include_tasks: kube-init.yml
+#- name: Initialize kubernetes cluster 
+ # command: "kubeadm init --apiserver-advertise-address={{ mprivateip }} --pod-network-cidr=10.244.0.0/16"
+  #register: initialize_clus
+#  ignore_errors: yes
+#  delegate_facts: true
+ # delegate_to: '{{ item  }}'
+ # with_items: "{{ groups['master'] }}"
 
    
-- include: create-dir.yml
-  delegate_to: "{{ item }}"  
-  with_items: "{{ groups['master'] }}"
+- include_tasks: create-dir.yml
+#  delegate_to: "{{ item }}"  
+ # with_items: "{{ groups['master'] }}"
 
-- include: pod-nw.yml
-  delegate_facts: true
-  delegate_to: "{{ item }}" 
-  with_items: "{{ groups['master'] }}"
+- include_tasks: pod-nw.yml
+  #delegate_facts: true
+  #delegate_to: "{{ item }}" 
+#  with_items: "{{ groups['master'] }}"
 
-- include_tasks: pass1.yml
+- include_tasks: create-token.yml
 
-- include_tasks: pass2.yml
+- include_tasks: join.yml
 
 #- name: Get token list 
  ## shell: kubeadm token list 

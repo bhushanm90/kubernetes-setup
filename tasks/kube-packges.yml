@@ -1,27 +1,37 @@
 ---
 - name: Disable SWAP
-  command: "{{ item }}" 
-  with_items: 
-    - "sed -i '/swap/d' /etc/fstab"
-    - "swapoff -a"
+  shell: |
+    /usr/bin/sed -i '/swap/d' /etc/fstab
+    /usr/sbin/swapoff -a
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
 
 - name: Stop firwalld if running
   command: systemctl stop firewalld
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
 
 - name: Disable SELinux 
   selinux:
     state: disabled
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
 
 - name: Add Docker repo
   get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docker-ce.repo
     mode: 0644 
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
 
 - name: Install Kubernets compatible Docker 
   yum: 
     name: docker-ce-18.06.1.ce-3.el7*
     state: present
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
 
 - name: Start and enable Docker service
   service:
@@ -29,6 +39,8 @@
     state: started
     enabled: yes
   register: docser
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
    
 - debug: 
     var: "{{ docser }}"
@@ -44,16 +56,19 @@
     enabled: yes
     repo_gpgcheck: yes
     gpgkey: "https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
+  delegate_to: '{{ item  }}'
+  with_items: "{{ groups['cluster'] }}"
 
 
 - name: Install kubernetes base packages
   yum:   
-    name: "{{ item }}"
     state: latest
-  with_items: 
-    - "kubelet"
-    - "kubeadm"
-    - "kubectl"
+    name:
+    - kubelet
+    - kubeadm
+    - kubectl
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
         
 - name: Start and enable Kubelet service 
   service: 
@@ -61,6 +76,8 @@
     state: started
     enabled: yes
   register: kubeser
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
 
 - debug:
     var: "{{ kubeser }}"

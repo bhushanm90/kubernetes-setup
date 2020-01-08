@@ -6,7 +6,6 @@
     /bin/chown $(id -u):$(id -g) $HOME/.kube/config
   async: 60
   poll: 10
-  #run_once: true
-  #delegate_to: "{{ item }}"
-  #with_items: "{{ groups['master'] }}"
+  delegate_to: '{{ item  }}'
+  with_items: "{{ groups['master'] }}"
 
