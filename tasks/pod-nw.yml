@@ -6,5 +6,4 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['master'] }}"
       
-- debug: 
-    var: "{{ podnw }}"
+- debug: msg={{ podnw }}

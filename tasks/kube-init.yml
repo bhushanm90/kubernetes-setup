@@ -1,13 +1,23 @@
 ---
-- name: Initialize kubernetes cluster 
-  command: "kubeadm init --apiserver-advertise-address={{ mprivateip }} --pod-network-cidr=10.244.0.0/16"
-  register: initialize_clus
-  ignore_errors: yes
+- name: Check if kubeadm has already run
+  stat:
+    path: "/etc/kubernetes/pki/ca.key"
+  register: kubeadm_ca
+  delegate_facts: true
   delegate_to: "{{ item }}"
   with_items: "{{ groups['master'] }}"
 
-- debug:   
-    var: "{{ initialize_clus }}"
+
+- name: Initialize kubernetes cluster 
+  when: not kubeadm_ca.stat.exists
+  command: "kubeadm init --apiserver-advertise-address={{ mprivateip }} --pod-network-cidr=10.244.0.0/16"
+  register: initialize_clus
+  run_once: yes 
+  delegate_facts: true
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['master'] }}"
+
+- debug: msg={{ initialize_clus }}
 
 
 

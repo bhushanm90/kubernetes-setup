@@ -1,5 +1,6 @@
 ---
 - name: Disable SWAP
+  when: ansible_swaptotal_mb > 0
   shell: |
     /usr/bin/sed -i '/swap/d' /etc/fstab
     /usr/sbin/swapoff -a
@@ -27,26 +28,30 @@
   with_items: "{{ groups['cluster'] }}"
 
 - name: Install Kubernets compatible Docker 
+  when: ansible_os_family == "RedHat"
   yum: 
     name: docker-ce-18.06.1.ce-3.el7*
     state: present
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
-
+  
 - name: Start and enable Docker service
+  when: ansible_os_family == "RedHat"
   service:
     name: docker
     state: started
     enabled: yes
   register: docser
+  notify:
+    - restart dockerredhat 
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
-   
-- debug: 
-    var: "{{ docser }}"
+
+- debug: msg={{ docser }}
        
 
 - name: Create repository for kubernetes
+  when: ansible_os_family == "RedHat"
   yum_repository: 
     name: kubernetes
     description:  kubernetes
@@ -61,6 +66,7 @@
 
 
 - name: Install kubernetes base packages
+  when: ansible_os_family == "RedHat"
   yum:   
     state: latest
     name:
@@ -71,14 +77,120 @@
   with_items: "{{ groups['cluster'] }}"
         
 - name: Start and enable Kubelet service 
+  when: ansible_os_family == "RedHat"
   service: 
     name: kubelet
     state: started
     enabled: yes
   register: kubeser
+  notify:
+    - restart kuberedhat 
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
 
 - debug:
     var: "{{ kubeser }}"
+   
+- name: Install apt-transport-https
+  when: ansible_os_family == "Debian" 
+  apt:
+    name: "apt-transport-https"
+    state: present
+    update_cache: yes
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
     
+- name: Add Docker APT GPG key
+  when: ansible_os_family == "Debian"
+  apt_key: 
+    url: https://download.docker.com/linux/ubuntu/gpg
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
+
+- name: Add Docker APT repository
+  when: ansible_os_family == "Debian"
+  apt_repository: 
+    repo: deb https://download.docker.com/linux/ubuntu xenial stable
+    state: present
+    filename: 'docker'
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
+
+- name: Install docker engine (Debian/Ubuntu)
+  when: ansible_os_family == "Debian"
+  apt:
+    update_cache: yes
+    name: "docker-ce-18.06*"
+    state: present
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
+- name: Start Docker daemon (Debian/Ubuntu)
+  when: ansible_os_family == "Debian"
+  service:
+    name: docker
+    state: started
+  notify:
+    - restart dockerdebian 
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
+
+- name: Hold docker version (Debian/Ubuntu)
+  when: ansible_os_family == "Debian"
+  dpkg_selections:
+    name: "docker-ce"
+    selection: hold
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
+
+
+- name: Add Kubernetes APT GPG key
+  when: ansible_os_family == "Debian"
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
+
+- name: Add Kubernetes APT repository
+  when: ansible_os_family == "Debian"
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: 'kubernetes'
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
+
+
+- name: Install kubernetes packages (Debian/Ubuntu)
+  when: ansible_os_family == "Debian"
+  apt:
+    name: "{{ item }}" 
+    update_cache: yes
+    state: installed
+    with_items: 
+      - 'kubelet'
+      - 'kubeadm'
+      - 'kubectl'
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
+
+- name: Start Kubelet service
+  when: ansible_os_family == "Debian"
+  service:
+    name: kubelet
+    #daemon_reload: yes
+    state: started
+  notify:
+    - restart kubedebian  
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+

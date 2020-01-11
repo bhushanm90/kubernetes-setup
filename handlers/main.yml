@@ -1,2 +1,16 @@
 ---
 # handlers file for kubernetes-setup
+#
+#
+
+- name: restart dockerredhat
+  service: name=docker state=restarted
+
+- name: restart kuberedhat
+  service: name=kubelet state=restarted
+
+- name: restart dockerdebian
+  service: name=docker state=restarted
+
+- name: restart kubedebian
+  service: name=kubelet state=restarted
