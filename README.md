@@ -1,7 +1,19 @@
 Role Name
 =========
 
+kubernetes-setup
+
 A brief description of the role goes here.
+
+
+#Supported OS version
+----------------------
+
+RedHat Family
+CentOS6/7
+ 
+Debian Family
+Ubuntu-16/17
 
 Requirements
 ------------
@@ -23,24 +35,20 @@ Example Playbook
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
----
+## Global YML file 
+------------------
+
 - hosts: master
   become: true
-  pre_tasks:
-    - name: Bring private ip of remote server
-      set_fact:
-        mprivateip: "{{ ansible_eth0.ipv4.address }}"
-      delegate_to: "{{ item }}"
-      delegate_facts: true
-      with_items: "{{ groups['master'] }}"
-
-
   roles:
     - kubernetes-setup
 
+
 ansible-playbook common.yml
 =============================================================================
+
 INVENTORY: example
+-----------------
 
 [cluster]
 3.88.33.75
@@ -59,8 +67,8 @@ INVENTORY: example
 License
 -------
 
-BSD
-
+Private
+===============================================================
 Author Information
 ------------------
 Bhushan B Mahajan
@@ -69,9 +77,8 @@ Bhushan B Mahajan
 It's hard to beat a person who never Gives up !!!
 
 
-Contact: bmahajan0@gmail.com
+Contact: bmahajan0@gmail.com 
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
-=======
-# kubernetes-setup
- 
+
+Please feel free to contact me if you need any further information.
+==================================================================
