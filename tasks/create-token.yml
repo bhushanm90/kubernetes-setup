@@ -5,8 +5,6 @@
 
     - debug: msg={{ kubetoken }}
 
-    - set_fact:
-        newtoken: "{{ kubetoken }}"
 
     - name: Create CA-CERT
       shell: "openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'"
@@ -17,6 +15,4 @@
     - debug: msg={{ cacert.stdout }}
 
 
-    - set_fact:
-        newcert: "{{ cacert }}"
 

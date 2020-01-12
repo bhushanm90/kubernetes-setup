@@ -1,0 +1,45 @@
+---
+# tasks file for kubernetes-setup
+#
+- debug: 
+    msg: "This is a private IP address of master :{{ mprivateip }}"
+  register: picip
+
+
+- include_tasks: kube-packges.yml
+
+- include_tasks: kube-init.yml
+   
+- include_tasks: create-dir.yml
+
+- include_tasks: pod-nw.yml
+
+- include_tasks: create-token.yml
+
+- include_vars: join.yml
+- debug: var={{ kubelet_conf }}
+
+#  kubelet_conf
+#  delegate_facts: true
+ # delegate_to: "{{ item }}"
+  #with_items: "{{ groups['worker'] }}"
+ 
+
+#- name: Check if kubelet.conf exists
+ # stat:
+  #  path:  "/etc/kubernetes/kubelet.conf"
+#  register: kubelet_conf
+#  delegate_facts: true
+ # delegate_to: "{{ item }}"
+  #with_items: "{{ groups['worker'] }}"
+
+
+- name: join worker node
+  when: file_stat.exists == False
+  #when: kubelet_conf.stat.exists == False
+  command: "kubeadm join {{ mprivateip }}:6443 --token {{ kubetoken.stdout_lines[1].split()[0] }}  --discovery-token-ca-cert-hash sha256:{{ cacert.stdout }}"
+# delegate_facts: true
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['worker'] }}"
+  tags: t
+

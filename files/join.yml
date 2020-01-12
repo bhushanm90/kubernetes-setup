@@ -1,0 +1,27 @@
+---
+ #   - debug: msg={{ newtoken }}
+
+  #  - debug: msg={{ newcert }}
+
+    - name: Check if kubelet.conf exists
+      stat: 
+        path:  "/etc/kubernetes/kubelet.conf"
+      register: kubelet_conf
+      delegate_facts: true
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['worker'] }}"
+  
+    - debug: msg={{ kubelet_conf }}
+
+
+#    - name: join worker node
+ #     when: not kubelet_conf.stat.exists
+  #    command: "kubeadm join {{ mprivateip }}:6443 --token {{ kubetoken.stdout_lines[1].split()[0] }}  --discovery-token-ca-cert-hash sha256:{{ cacert.stdout }}"
+   #   register: joinwork
+    #  delegate_facts: true
+     # delegate_to: "{{ item }}"
+      #with_items: "{{ groups['worker'] }}"
+#      tags: t
+
+
+

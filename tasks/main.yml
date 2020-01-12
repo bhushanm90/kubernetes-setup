@@ -1,6 +1,15 @@
 ---
 # tasks file for kubernetes-setup
 #
+#
+- name: Bring private ip of remote master server
+  set_fact:
+    mprivateip: "{{ ansible_eth0.ipv4.address }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups['master'] }}"
+
+
 - debug: 
     msg: "This is a private IP address of master :{{ mprivateip }}"
   register: picip
@@ -18,3 +27,4 @@
 
 - include_tasks: join.yml
 
+ 

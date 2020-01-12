@@ -9,17 +9,26 @@
 
 
 - name: Stop firwalld if running
+  when: ansible_os_family == "RedHat"
   command: systemctl stop firewalld
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
 
+- name: Stop firwalld if running
+  when: ansible_os_family == "Debian"
+  command: service ufw stop
+  delegate_to: '{{ item }}'
+  with_items: "{{ groups['cluster'] }}"
+
 - name: Disable SELinux 
+  when: ansible_os_family == "RedHat"
   selinux:
     state: disabled
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
 
 - name: Add Docker repo
+  when: ansible_os_family == "RedHat"
   get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docker-ce.repo
@@ -123,7 +132,7 @@
   when: ansible_os_family == "Debian"
   apt:
     update_cache: yes
-    name: "docker-ce-18.06*"
+    name: "docker-ce=17.03.2*"
     state: present
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
@@ -172,13 +181,12 @@
 - name: Install kubernetes packages (Debian/Ubuntu)
   when: ansible_os_family == "Debian"
   apt:
-    name: "{{ item }}" 
+    pkg: 
+    - 'kubelet'
+    - 'kubeadm'
+    - 'kubectl'
     update_cache: yes
-    state: installed
-    with_items: 
-      - 'kubelet'
-      - 'kubeadm'
-      - 'kubectl'
+    state: present
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
 
@@ -191,6 +199,6 @@
     state: started
   notify:
     - restart kubedebian  
-  delegate_to: '{{ item }}'
+  delegate_to: "{{ item }}"
   with_items: "{{ groups['cluster'] }}"
 

@@ -3,19 +3,30 @@
   stat:
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
-  delegate_facts: true
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['master'] }}"
+#  delegate_facts: true
+ # delegate_to: "{{ item }}"
+#  with_items: "{{ groups['master'] }}"
+
+- debug: msg={{ kubeadm_ca }}
+
+#- name: Delegate var
+ # set_fact:
+  #  kubestat: "{{ kubeadm_ca }}"
+  #delegate_facts: True
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['master'] }}"
 
 
 - name: Initialize kubernetes cluster 
-  when: not kubeadm_ca.stat.exists
+  when: kubeadm_ca.stat.exists == False
   command: "kubeadm init --apiserver-advertise-address={{ mprivateip }} --pod-network-cidr=10.244.0.0/16"
   register: initialize_clus
   run_once: yes 
   delegate_facts: true
   delegate_to: "{{ item }}"
   with_items: "{{ groups['master'] }}"
+
+
 
 - debug: msg={{ initialize_clus }}
 
