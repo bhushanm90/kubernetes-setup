@@ -11,12 +11,14 @@
 - name: Stop firwalld if running
   when: ansible_os_family == "RedHat"
   command: systemctl stop firewalld
+  ignore_errors: yes
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
 
 - name: Stop firwalld if running
   when: ansible_os_family == "Debian"
   command: service ufw stop
+  ignore_errors: yes
   delegate_to: '{{ item }}'
   with_items: "{{ groups['cluster'] }}"
 
@@ -202,3 +204,14 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['cluster'] }}"
 
+- name: Install openssl RedHat
+  yum: 
+    name: openssl* 
+    state: present
+  when: ansible_os_family == "RedHat"
+ 
+- name: Install openssl Debian
+  apt:  
+    name: openssl* 
+    state: present
+  when: ansible_os_family == "Debian"
